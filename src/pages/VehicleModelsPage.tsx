@@ -44,7 +44,7 @@ export default function VehicleModelsPage() {
               </div>
             ) : (
               <ul className="space-y-4">
-                {myVehicles.map(model => (
+                {[...myVehicles].sort((a, b) => `${a.brand} ${a.modelName}`.localeCompare(`${b.brand} ${b.modelName}`)).map(model => (
                   <li key={model.id} className="bg-gradient-to-r from-blue-500 to-pink-500 p-4 rounded-lg shadow-md flex justify-between items-center text-white">
                     <div>
                       <p className="font-semibold text-lg">{model.brand} {model.modelName}</p>

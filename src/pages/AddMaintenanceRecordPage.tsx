@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMyVehicles } from '../contexts/MyVehiclesContext';
 import { useServices } from '../contexts/ServiceContext';
@@ -10,6 +10,10 @@ export default function AddMaintenanceRecordPage() {
   const { myVehicles } = useMyVehicles();
   const { services } = useServices();
   const { addMaintenanceRecord } = useMaintenance();
+
+  const sortedServices = useMemo(() => {
+    return [...services].sort((a, b) => a.name.localeCompare(b.name));
+  }, [services]);
 
   const [vehicleId, setVehicleId] = useState(urlVehicleId || '');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -88,7 +92,7 @@ export default function AddMaintenanceRecordPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700">Prestation(s)</label>
               <div className="mt-1 border border-gray-300 rounded-md shadow-sm p-3 max-h-40 overflow-y-auto">
-                {services.map(s => (
+                {sortedServices.map(s => (
                   <div key={s.id} className="flex items-center">
                     <input type="checkbox" id={`service-${s.id}`} checked={selectedServices.includes(s.id)} onChange={() => handleServiceChange(s.id)} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
                     <label htmlFor={`service-${s.id}`} className="ml-2 block text-sm text-gray-900">{s.name}</label>

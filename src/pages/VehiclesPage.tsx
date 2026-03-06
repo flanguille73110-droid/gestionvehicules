@@ -19,7 +19,7 @@ export default function VehiclesPage() {
               </div>
             ) : (
               <ul className="space-y-4">
-                {myVehicles.map(vehicle => (
+                {[...myVehicles].sort((a, b) => `${a.brand} ${a.modelName}`.localeCompare(`${b.brand} ${b.modelName}`)).map(vehicle => (
                   <li key={vehicle.id}>
                     <Link to={`/vehicules/${vehicle.id}`} className="block bg-gradient-to-r from-blue-500 to-pink-500 p-4 rounded-lg shadow-md hover:from-blue-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-[1.02] text-white">
                       <p className="font-semibold text-lg">{vehicle.brand} {vehicle.modelName}</p>

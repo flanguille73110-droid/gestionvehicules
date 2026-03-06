@@ -11,7 +11,7 @@ export default function VehicleDetailsPage() {
   const [isOperationModalOpen, setIsOperationModalOpen] = useState(false);
   const [editingOperationId, setEditingOperationId] = useState<string | null>(null);
   const [newOperation, setNewOperation] = useState({ operation: '', kmOrYear: '', plannedDate: '', price: '' });
-  const [sortConfig, setSortConfig] = useState<{ key: 'operation' | 'plannedDate', direction: 'asc' | 'desc' } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ key: 'operation' | 'plannedDate', direction: 'asc' | 'desc' } | null>({ key: 'operation', direction: 'asc' });
 
   useEffect(() => {
     setLocalVehicle(vehicle);

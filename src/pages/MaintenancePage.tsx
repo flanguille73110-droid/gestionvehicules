@@ -14,7 +14,7 @@ export default function MaintenancePage() {
             <p className="mb-4 text-gray-600">Veuillez sélectionner un véhicule pour voir son carnet d'entretien.</p>
             {myVehicles.length > 0 ? (
               <ul className="space-y-2">
-                {myVehicles.map(v => (
+                {[...myVehicles].sort((a, b) => `${a.brand} ${a.modelName}`.localeCompare(`${b.brand} ${b.modelName}`)).map(v => (
                   <li key={v.id}>
                     <Link to={`/entretien/details/${v.id}`} className="block bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-[1.02] shadow-md">
                       {v.brand} {v.modelName}

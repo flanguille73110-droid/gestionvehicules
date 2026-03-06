@@ -34,7 +34,7 @@ export default function VehicleMaintenanceDetailsPage() {
   if (!vehicle) {
     return (
       <div className="min-h-screen bg-violet-100 p-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-full mx-auto px-4">
           <Link to="/entretien" className="text-blue-500 hover:underline mb-4 inline-block">{'<'} Retour au carnet d'entretien</Link>
           <div className="bg-white p-6 rounded-lg shadow-md text-center">
             <p className="text-red-500">Véhicule non trouvé.</p>
@@ -84,7 +84,7 @@ export default function VehicleMaintenanceDetailsPage() {
 
   return (
     <div className="min-h-screen bg-violet-100 p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-full mx-auto px-4">
         <Link to="/entretien" className="text-blue-500 hover:underline mb-4 inline-block">{'<'} Retour au carnet d'entretien</Link>
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex justify-between items-center mb-4">

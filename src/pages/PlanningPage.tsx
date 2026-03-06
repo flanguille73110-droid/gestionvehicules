@@ -12,7 +12,7 @@ export default function PlanningPage() {
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {myVehicles.map(vehicle => (
+          {[...myVehicles].sort((a, b) => `${a.brand} ${a.modelName}`.localeCompare(`${b.brand} ${b.modelName}`)).map(vehicle => (
             <Link 
               key={vehicle.id} 
               to={`/planning/${vehicle.id}`}

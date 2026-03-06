@@ -19,7 +19,7 @@ export default function PlanningVehiclePage() {
   const [untilYear, setUntilYear] = useState('');
   const [frequencyKm, setFrequencyKm] = useState('');
   
-  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>({ key: 'operationName', direction: 'asc' });
   const [selectedYear, setSelectedYear] = useState<string>('');
 
   const currentYear = new Date().getFullYear();
@@ -356,9 +356,11 @@ export default function PlanningVehiclePage() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   <option value="">Sélectionner une opération</option>
-                  {vehicle.maintenancePlan?.map(op => (
-                    <option key={op.id} value={op.operation}>{op.operation}</option>
-                  ))}
+                  {[...(vehicle.maintenancePlan || [])]
+                    .sort((a, b) => a.operation.localeCompare(b.operation))
+                    .map(op => (
+                      <option key={op.id} value={op.operation}>{op.operation}</option>
+                    ))}
                 </select>
               </div>
               
