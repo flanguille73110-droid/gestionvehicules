@@ -1,0 +1,5 @@
+{
+  "name": "Gestion de Véhicules",
+  "description": "Application pour la gestion de fiches véhicules et de leurs carnets d'entretien.",
+  "requestFramePermissions": []
+}
