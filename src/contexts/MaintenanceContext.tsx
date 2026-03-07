@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { MaintenanceRecord } from '../types';
 
 interface MaintenanceContextType {
@@ -10,8 +10,17 @@ interface MaintenanceContextType {
 
 const MaintenanceContext = createContext<MaintenanceContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'autosuivi_maintenance_records';
+
 export function MaintenanceProvider({ children }: { children: ReactNode }) {
-  const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([]);
+  const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(maintenanceRecords));
+  }, [maintenanceRecords]);
 
   const addMaintenanceRecord = (record: Omit<MaintenanceRecord, 'id'>) => {
     const newRecord: MaintenanceRecord = {

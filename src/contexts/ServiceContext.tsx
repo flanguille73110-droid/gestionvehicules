@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Service } from '../types';
 
 const predefinedServices: Omit<Service, 'id'>[] = [
@@ -44,7 +44,7 @@ const predefinedServices: Omit<Service, 'id'>[] = [
 
 const initialServices: Service[] = predefinedServices.map(service => ({
   ...service,
-  id: crypto.randomUUID(),
+  id: service.name, // Use the name as a stable ID for predefined services
 }));
 
 interface ServiceContextType {
@@ -56,21 +56,38 @@ interface ServiceContextType {
 
 const ServiceContext = createContext<ServiceContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'autosuivi_services';
+
 export function ServiceProvider({ children }: { children: ReactNode }) {
-  const [services, setServices] = useState<Service[]>(initialServices);
+  const [services, setServices] = useState<Service[]>(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Ensure predefined services are always present with their stable IDs
+      const existingIds = new Set(parsed.map((s: Service) => s.id));
+      const missingPredefined = initialServices.filter(s => !existingIds.has(s.id));
+      return [...parsed, ...missingPredefined];
+    }
+    return initialServices;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(services));
+  }, [services]);
 
   const addService = (service: Omit<Service, 'id'> & { id?: string }) => {
     const newId = service.id || crypto.randomUUID();
     const newService = { ...service, id: newId };
+    
     setServices(prevServices => {
-      // Check for duplicates by ID
+      // If the ID already exists, don't add it again
       if (prevServices.some(s => s.id === newId)) {
         return prevServices;
       }
-      // Check for duplicates by name (case insensitive)
-      if (prevServices.some(s => s.name.toLowerCase().trim() === newService.name.toLowerCase().trim())) {
-        return prevServices;
-      }
+      
+      // If the name already exists but with a different ID, we still add it 
+      // to support imported records that might use this specific ID.
+      // This prevents the "numbers/chiffres" issue in the carnet d'entretien.
       return [...prevServices, newService];
     });
     return newId;

@@ -15,7 +15,7 @@ export default function SettingsPage() {
               Marques et Modèles
             </Link>
             <Link to="/params/sauvegarde-import" className="block bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:from-blue-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105">
-              Sauvegarde & Import
+              Sauvegarde & Import / Réinitialisation
             </Link>
           </div>
         </div>

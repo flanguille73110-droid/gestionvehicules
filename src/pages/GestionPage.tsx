@@ -6,6 +6,7 @@ export default function GestionPage() {
   const { maintenanceRecords } = useMaintenance();
   const { myVehicles } = useMyVehicles();
   const [selectedYear, setSelectedYear] = useState<string>('');
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 31 }, (_, i) => (currentYear - 10 + i).toString());
@@ -14,9 +15,11 @@ export default function GestionPage() {
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
-  const filteredRecords = selectedYear 
-    ? sortedRecords.filter(record => new Date(record.date).getFullYear().toString() === selectedYear)
-    : sortedRecords;
+  const filteredRecords = sortedRecords.filter(record => {
+    const matchesYear = selectedYear ? new Date(record.date).getFullYear().toString() === selectedYear : true;
+    const matchesVehicle = selectedVehicleId ? record.vehicleId === selectedVehicleId : true;
+    return matchesYear && matchesVehicle;
+  });
 
   const totalAmount = filteredRecords.reduce((sum, record) => sum + record.amount, 0);
 
@@ -49,6 +52,22 @@ export default function GestionPage() {
                   {years.map(year => <option key={year} value={year} />)}
                 </datalist>
               </div>
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="vehicle-filter" className="text-sm font-bold text-gray-600 mb-2 uppercase tracking-wider">Véhicule</label>
+              <select
+                id="vehicle-filter"
+                value={selectedVehicleId}
+                onChange={(e) => setSelectedVehicleId(e.target.value)}
+                className="w-64 px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-gray-50/50 shadow-inner transition-all"
+              >
+                <option value="">Tous les véhicules</option>
+                {myVehicles.map(v => (
+                  <option key={v.id} value={v.id}>
+                    {v.brand} {v.modelName} ({v.engine})
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="flex flex-col">
               <label className="text-sm font-bold text-gray-600 mb-2 uppercase tracking-wider">Total €</label>

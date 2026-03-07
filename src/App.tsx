@@ -24,6 +24,7 @@ import EditVehicleModelPage from './pages/EditVehicleModelPage';
 import VehicleDetailsPage from './pages/VehicleDetailsPage';
 import VehicleMaintenanceDetailsPage from './pages/VehicleMaintenanceDetailsPage';
 import BackupImportPage from './pages/BackupImportPage';
+import ResetPage from './pages/ResetPage';
 import EditMaintenanceRecordPage from './pages/EditMaintenanceRecordPage';
 import PlanningPage from './pages/PlanningPage';
 import PlanningVehiclePage from './pages/PlanningVehiclePage';
@@ -67,6 +68,7 @@ export default function App() {
                     <Route path="/gestion" element={<GestionPage />} />
                     <Route path="/params" element={<SettingsPage />} />
                     <Route path="/params/sauvegarde-import" element={<BackupImportPage />} />
+                    <Route path="/params/reinitialisation" element={<ResetPage />} />
                     <Route path="/params/prestations" element={<ServicesPage />} />
                     <Route path="/vehicules/ajouter" element={<AddVehiclePage />} />
                     <Route path="/params/prestations/ajouter" element={<AddServicePage />} />

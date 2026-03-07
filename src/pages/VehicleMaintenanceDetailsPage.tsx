@@ -45,18 +45,21 @@ export default function VehicleMaintenanceDetailsPage() {
   }
 
   const getServiceNames = (serviceIds: string) => {
-    const ids = serviceIds.split(', ').filter(Boolean);
+    if (!serviceIds) return '-';
+    // Split by comma with optional space
+    const ids = serviceIds.split(/, ?/).filter(Boolean);
     return ids.map(id => {
+      const trimmedId = id.trim();
       // Try to find by ID
-      let service = services.find(s => s.id === id);
+      let service = services.find(s => s.id === trimmedId);
       if (service) return service.name;
       
-      // If not found by ID, try to find by name (in case it was imported as a name)
-      service = services.find(s => s.name === id);
+      // If not found by ID, try to find by name (case insensitive)
+      service = services.find(s => s.name.toLowerCase().trim() === trimmedId.toLowerCase().trim());
       if (service) return service.name;
-
-      // If still not found, return the id itself (it might be the name)
-      return id;
+ 
+      // If still not found, return the id itself (it might be the name already)
+      return trimmedId;
     }).join(', ');
   };
 

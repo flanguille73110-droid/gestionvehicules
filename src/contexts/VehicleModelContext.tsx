@@ -28,8 +28,25 @@ interface VehicleModelContextType {
 
 const VehicleModelContext = createContext<VehicleModelContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'autosuivi_vehicle_models';
+
 export function VehicleModelProvider({ children }: { children: ReactNode }) {
-  const [vehicleModels, setVehicleModels] = useState<VehicleModel[]>(initialModels);
+  const [vehicleModels, setVehicleModels] = useState<VehicleModel[]>(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Merge stored models with initial models to ensure we have the latest static data
+      // but keep user-added models
+      const initialIds = new Set(initialModels.map(m => `${m.brand}-${m.modelName}-${m.engine}`));
+      const userModels = parsed.filter((m: VehicleModel) => !initialIds.has(`${m.brand}-${m.modelName}-${m.engine}`));
+      return [...initialModels, ...userModels];
+    }
+    return initialModels;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(vehicleModels));
+  }, [vehicleModels]);
 
   const addVehicleModel = (model: Omit<VehicleModel, 'id'>) => {
     const newModel = { ...model, id: crypto.randomUUID() };

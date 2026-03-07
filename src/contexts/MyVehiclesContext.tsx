@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { VehicleModel } from '../types';
 
 interface MyVehiclesContextType {
@@ -10,8 +10,17 @@ interface MyVehiclesContextType {
 
 const MyVehiclesContext = createContext<MyVehiclesContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'autosuivi_my_vehicles';
+
 export function MyVehiclesProvider({ children }: { children: ReactNode }) {
-  const [myVehicles, setMyVehicles] = useState<VehicleModel[]>([]);
+  const [myVehicles, setMyVehicles] = useState<VehicleModel[]>(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(myVehicles));
+  }, [myVehicles]);
 
   const addMyVehicle = (vehicle: Omit<VehicleModel, 'id'> & { id?: string }) => {
     const newId = vehicle.id || crypto.randomUUID();
