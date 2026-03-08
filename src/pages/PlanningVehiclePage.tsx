@@ -439,9 +439,18 @@ export default function PlanningVehiclePage() {
                   <option value="">Sélectionner une opération</option>
                   {[...(vehicle.maintenancePlan || [])]
                     .sort((a, b) => a.operation.localeCompare(b.operation))
-                    .map(op => (
-                      <option key={op.id} value={op.operation}>{op.operation}</option>
-                    ))}
+                    .map(op => {
+                      const isAlreadyPlanned = vehicle.plannedPrograms?.some(p => p.operationName === op.operation);
+                      return (
+                        <option 
+                          key={op.id} 
+                          value={op.operation}
+                          style={{ color: isAlreadyPlanned ? '#9ca3af' : 'inherit' }}
+                        >
+                          {op.operation} {isAlreadyPlanned ? '(Déjà programmé)' : ''}
+                        </option>
+                      );
+                    })}
                 </select>
               </div>
               
