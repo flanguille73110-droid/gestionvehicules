@@ -14,6 +14,11 @@ export default function PlanningVehiclePage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [idToDelete, setIdToDelete] = useState<string | null>(null);
 
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
+  const [bulkPrice, setBulkPrice] = useState('');
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+
   const [newProgram, setNewProgram] = useState({ operationName: '', kmOrYear: '', plannedDate: '', plannedKm: '', price: '' });
   const [repetitionYears, setRepetitionYears] = useState('');
   const [untilYear, setUntilYear] = useState('');
@@ -197,6 +202,38 @@ export default function PlanningVehiclePage() {
     return sum + price;
   }, 0);
 
+  const selectedPrograms = (vehicle.plannedPrograms || []).filter(p => selectedIds.includes(p.id));
+  const canBulkEdit = selectedPrograms.length > 0 && selectedPrograms.every(p => p.operationName === selectedPrograms[0].operationName);
+  const canBulkDelete = selectedIds.length > 0;
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = () => {
+    if (!vehicle) return;
+    const updatedVehicle = {
+      ...vehicle,
+      plannedPrograms: (vehicle.plannedPrograms || []).filter(p => !selectedIds.includes(p.id))
+    };
+    updateMyVehicle(updatedVehicle);
+    setSelectedIds([]);
+    setIsBulkDeleteModalOpen(false);
+  };
+
+  const handleBulkEdit = () => {
+    if (!vehicle) return;
+    const updatedPrograms = (vehicle.plannedPrograms || []).map(p => 
+      selectedIds.includes(p.id) ? { ...p, price: bulkPrice } : p
+    );
+    updateMyVehicle({ ...vehicle, plannedPrograms: updatedPrograms });
+    setSelectedIds([]);
+    setIsBulkEditModalOpen(false);
+    setBulkPrice('');
+  };
+
   return (
     <div className="min-h-screen bg-violet-100 p-8">
       <div className="max-w-6xl mx-auto">
@@ -251,6 +288,34 @@ export default function PlanningVehiclePage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 border-r border-gray-100 w-24">
+                    <div className="flex flex-col items-center gap-2">
+                      <span>Sélection</span>
+                      <div className="flex items-center gap-2">
+                        {canBulkEdit && (
+                          <button 
+                            onClick={() => {
+                              setBulkPrice(selectedPrograms[0].price || '');
+                              setIsBulkEditModalOpen(true);
+                            }}
+                            className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                            title="Modifier les tarifs"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                        )}
+                        {canBulkDelete && (
+                          <button 
+                            onClick={() => setIsBulkDeleteModalOpen(true)}
+                            className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
+                            title="Supprimer la sélection"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </th>
                   <th 
                     className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 border-r border-gray-100 cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() => handleSort('plannedDate')}
@@ -295,7 +360,23 @@ export default function PlanningVehiclePage() {
               <tbody>
                 {filteredPrograms.length > 0 ? (
                   filteredPrograms.map(program => (
-                    <tr key={program.id} className="border-b border-gray-50 hover:bg-blue-50/30 transition-colors">
+                    <tr key={program.id} className={`border-b border-gray-50 hover:bg-blue-50/30 transition-colors ${selectedIds.includes(program.id) ? 'bg-green-50/50' : ''}`}>
+                      <td className="px-4 py-4 border-r border-gray-100 text-center">
+                        <button
+                          onClick={() => toggleSelection(program.id)}
+                          className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
+                            selectedIds.includes(program.id) 
+                              ? 'bg-green-500 border-green-500 text-white' 
+                              : 'border-gray-300 hover:border-green-500'
+                          }`}
+                        >
+                          {selectedIds.includes(program.id) && (
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </button>
+                      </td>
                       <td className="px-4 py-4 border-r border-gray-100 text-sm">
                         {program.plannedDate ? new Date(program.plannedDate).toLocaleDateString('fr-FR') : ''}
                       </td>
@@ -479,6 +560,66 @@ export default function PlanningVehiclePage() {
               </button>
               <button
                 onClick={confirmDelete}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isBulkEditModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <h3 className="text-xl font-bold mb-4">Modifier les tarifs ({selectedIds.length} lignes)</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Opération : <span className="font-bold">{selectedPrograms[0]?.operationName}</span>
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nouveau tarif (€)</label>
+              <input
+                type="text"
+                value={bulkPrice}
+                onChange={(e) => setBulkPrice(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="Ex: 150"
+              />
+            </div>
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={() => setIsBulkEditModalOpen(false)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleBulkEdit}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+              >
+                Appliquer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isBulkDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-xl font-bold mb-2 text-gray-900">Confirmer la suppression groupée</h3>
+            <p className="text-gray-600 mb-6">
+              Êtes-vous sûr de vouloir supprimer les {selectedIds.length} lignes sélectionnées ? Cette action est irréversible.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setIsBulkDeleteModalOpen(false)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleBulkDelete}
                 className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
               >
                 Supprimer
