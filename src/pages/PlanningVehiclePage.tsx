@@ -477,7 +477,9 @@ export default function PlanningVehiclePage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {(vehicle.maintenancePlan || []).map(op => (
+                      {[...(vehicle.maintenancePlan || [])]
+                        .sort((a, b) => a.operation.localeCompare(b.operation))
+                        .map(op => (
                         <tr 
                           key={op.id} 
                           className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${highlightedYearRow === op.operation ? 'bg-purple-50' : ''}`}
@@ -559,7 +561,9 @@ export default function PlanningVehiclePage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {(vehicle.maintenancePlan || []).map(op => (
+                      {[...(vehicle.maintenancePlan || [])]
+                        .sort((a, b) => a.operation.localeCompare(b.operation))
+                        .map(op => (
                         <tr 
                           key={op.id} 
                           className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${highlightedKmRow === op.operation ? 'bg-purple-50' : ''}`}
