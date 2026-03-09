@@ -14,6 +14,11 @@ export default function PlanningVehiclePage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [idToDelete, setIdToDelete] = useState<string | null>(null);
 
+  const [viewMode, setViewMode] = useState<'ligne' | 'tableau'>('ligne');
+  const [highlightedYearRow, setHighlightedYearRow] = useState<string | null>(null);
+  const [highlightedYearCol, setHighlightedYearCol] = useState<number | null>(null);
+  const [highlightedKmRow, setHighlightedKmRow] = useState<string | null>(null);
+  const [highlightedKmCol, setHighlightedKmCol] = useState<number | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
   const [bulkPrice, setBulkPrice] = useState('');
@@ -284,7 +289,31 @@ export default function PlanningVehiclePage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+          <div className="flex items-center gap-2 mb-6">
+            <button
+              onClick={() => setViewMode('ligne')}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                viewMode === 'ligne'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Ligne
+            </button>
+            <button
+              onClick={() => setViewMode('tableau')}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                viewMode === 'tableau'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Tableau
+            </button>
+          </div>
+
+          {viewMode === 'ligne' ? (
+            <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100">
@@ -419,6 +448,173 @@ export default function PlanningVehiclePage() {
               </tbody>
             </table>
           </div>
+          ) : (
+            <div className="space-y-12">
+              {/* Tableau par Année */}
+              <div>
+                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
+                  Récapitulatif par Année
+                </h3>
+                <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+                  <table className="w-full text-left border-collapse bg-white">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 border-r border-gray-200 sticky left-0 bg-gray-50 z-10">
+                          Opérations
+                        </th>
+                        {Array.from(new Set((vehicle.plannedPrograms || []).map(p => new Date(p.plannedDate).getFullYear())))
+                          .sort((a, b) => a - b)
+                          .map(year => (
+                            <th 
+                              key={year} 
+                              className={`px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 border-r border-gray-200 text-center min-w-[80px] transition-colors ${highlightedYearCol === year ? 'bg-purple-100' : ''}`}
+                            >
+                              {year}
+                            </th>
+                          ))
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(vehicle.maintenancePlan || []).map(op => (
+                        <tr 
+                          key={op.id} 
+                          className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${highlightedYearRow === op.operation ? 'bg-purple-50' : ''}`}
+                        >
+                          <td 
+                            className={`px-4 py-3 font-medium text-gray-900 border-r border-gray-200 sticky left-0 z-10 text-sm transition-colors ${highlightedYearRow === op.operation ? 'bg-purple-100' : 'bg-white'}`}
+                            onClick={() => {
+                              setHighlightedYearRow(op.operation);
+                              setHighlightedYearCol(null);
+                            }}
+                          >
+                            {op.operation}
+                          </td>
+                          {Array.from(new Set((vehicle.plannedPrograms || []).map(p => new Date(p.plannedDate).getFullYear())))
+                            .sort((a, b) => a - b)
+                            .map(year => {
+                              const isPlanned = vehicle.plannedPrograms?.some(p => 
+                                p.operationName === op.operation && 
+                                new Date(p.plannedDate).getFullYear() === year
+                              );
+                              const isHighlighted = highlightedYearRow === op.operation || highlightedYearCol === year;
+                              return (
+                                <td 
+                                  key={year} 
+                                  className={`px-4 py-3 border-r border-gray-100 text-center cursor-pointer transition-colors ${isHighlighted ? 'bg-purple-50' : ''}`}
+                                  onClick={() => {
+                                    setHighlightedYearRow(op.operation);
+                                    setHighlightedYearCol(year);
+                                  }}
+                                >
+                                  {isPlanned && (
+                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 font-bold">
+                                      X
+                                    </span>
+                                  )}
+                                </td>
+                              );
+                            })
+                          }
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Tableau par Kilométrage */}
+              <div>
+                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <span className="w-2 h-6 bg-pink-500 rounded-full"></span>
+                  Récapitulatif par Kilométrage
+                </h3>
+                <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+                  <table className="w-full text-left border-collapse bg-white">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 border-r border-gray-200 sticky left-0 bg-gray-50 z-10">
+                          Opérations
+                        </th>
+                        {[
+                          { label: '0 - 29 999', min: 0, max: 29999 },
+                          { label: '30 000 - 59 999', min: 30000, max: 59999 },
+                          { label: '60 000 - 89 999', min: 60000, max: 89999 },
+                          { label: '90 000 - 119 999', min: 90000, max: 119999 },
+                          { label: '120 000 - 149 999', min: 120000, max: 149999 },
+                          { label: '150 000 - 179 999', min: 150000, max: 179999 },
+                          { label: '180 000 - 209 999', min: 180000, max: 209999 },
+                          { label: '210 000 - 239 999', min: 210000, max: 239999 },
+                          { label: '240 000 - 269 999', min: 240000, max: 269999 },
+                          { label: '270 000 - 300 000', min: 270000, max: 300000 },
+                        ].map((range, idx) => (
+                          <th 
+                            key={range.label} 
+                            className={`px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-gray-500 border-r border-gray-200 text-center min-w-[100px] transition-colors ${highlightedKmCol === idx ? 'bg-purple-100' : ''}`}
+                          >
+                            {range.label}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(vehicle.maintenancePlan || []).map(op => (
+                        <tr 
+                          key={op.id} 
+                          className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${highlightedKmRow === op.operation ? 'bg-purple-50' : ''}`}
+                        >
+                          <td 
+                            className={`px-4 py-3 font-medium text-gray-900 border-r border-gray-200 sticky left-0 z-10 text-sm transition-colors ${highlightedKmRow === op.operation ? 'bg-purple-100' : 'bg-white'}`}
+                            onClick={() => {
+                              setHighlightedKmRow(op.operation);
+                              setHighlightedKmCol(null);
+                            }}
+                          >
+                            {op.operation}
+                          </td>
+                          {[
+                            { min: 0, max: 29999 },
+                            { min: 30000, max: 59999 },
+                            { min: 60000, max: 89999 },
+                            { min: 90000, max: 119999 },
+                            { min: 120000, max: 149999 },
+                            { min: 150000, max: 179999 },
+                            { min: 180000, max: 209999 },
+                            { min: 210000, max: 239999 },
+                            { min: 240000, max: 269999 },
+                            { min: 270000, max: 300000 },
+                          ].map((range, idx) => {
+                            const isPlanned = vehicle.plannedPrograms?.some(p => {
+                              const km = parseInt(p.plannedKm);
+                              return p.operationName === op.operation && km >= range.min && km <= range.max;
+                            });
+                            const isHighlighted = highlightedKmRow === op.operation || highlightedKmCol === idx;
+                            return (
+                              <td 
+                                key={idx} 
+                                className={`px-4 py-3 border-r border-gray-100 text-center cursor-pointer transition-colors ${isHighlighted ? 'bg-purple-50' : ''}`}
+                                onClick={() => {
+                                  setHighlightedKmRow(op.operation);
+                                  setHighlightedKmCol(idx);
+                                }}
+                              >
+                                {isPlanned && (
+                                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 font-bold">
+                                    X
+                                  </span>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
